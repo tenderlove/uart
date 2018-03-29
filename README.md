@@ -31,6 +31,13 @@ UART.open '/dev/tty.usbserial-00000000' do |serial|
 end
 ```
 
+MHZ-19B CO2 sensor for Raspberry Pi * http://www.winsen-sensor.com/d/files/infrared-gas-sensor/mh-z19b-co2-ver1_0.pdf
+```
+require 'uart'
+a = UART.open('/dev/ttyAMA0') { |s| s.write("\xFF\x01\x86\x00\x00\x00\x00\x00\x79"); s.read(9).unpack('C9')}
+{ temp: a[4] - 40, co2: a[2] * 256 + a[3] } if 256 - a[1..7].reduce(&:+)%256 == a[8]
+```
+
 ## REQUIREMENTS:
 
 * ruby-termios
