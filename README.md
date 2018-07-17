@@ -42,7 +42,7 @@ a = UART.open('/dev/ttyAMA0') { |s| s.write("\xFF\x01\x86\x00\x00\x00\x00\x00\x7
 
 Plantower Particle Sensor
 * https://cdn-shop.adafruit.com/product-files/3686/plantower-pms5003-manual_v2-3.pdf
-``ruby
+```ruby
 require 'uart'
 require 'io/wait'
 
