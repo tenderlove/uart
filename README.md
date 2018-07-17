@@ -40,6 +40,46 @@ a = UART.open('/dev/ttyAMA0') { |s| s.write("\xFF\x01\x86\x00\x00\x00\x00\x00\x7
 { temp: a[4] - 40, co2: a[2] * 256 + a[3] } if 256 - a[1..7].reduce(&:+)%256 == a[8]
 ```
 
+Plantower Particle Sensor
+* https://cdn-shop.adafruit.com/product-files/3686/plantower-pms5003-manual_v2-3.pdf
+``ruby
+require 'uart'
+require 'io/wait'
+
+class Sample < Struct.new(:time,
+                          :pm1_0_standard, :pm2_5_standard, :pm10_standard,
+                          :pm1_0_env,      :pm2_5_env,
+                          :concentration_unit,
+                          :particle_03um,   :particle_05um,   :particle_10um,
+                          :particle_25um,   :particle_50um,   :particle_100um)
+end
+
+uart = UART.open ARGV[0], 9600, '8N1'
+
+p Sample.members # header
+
+loop do
+  uart.wait_readable
+  start1, start2 = uart.read(2).bytes
+
+  # According to the data sheet, packets always start with 0x42 and 0x4d
+  unless start1 == 0x42 && start2 == 0x4d
+    # skip a sample
+    uart.read
+    next
+  end
+
+  length = uart.read(2).unpack('n').first
+  data = uart.read(length)
+  crc  = 0x42 + 0x4d + 28 + data.bytes.first(26).inject(:+)
+  data = data.unpack('n14')
+
+  next unless crc == data.last # crc failure
+
+  p Sample.new(Time.now.utc, *data.first(12)).to_a
+end
+```
+
 ## REQUIREMENTS:
 
 * ruby-termios
