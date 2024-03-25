@@ -80,6 +80,29 @@ loop do
 end
 ```
 
+[Flipper Zero client](https://gist.github.com/knowtheory/1fd9e05a48c182177c7ad73e8bfaa4cf) (thanks to Ted Han!!)
+
+```ruby
+require 'uart'
+
+# find your flipper zero device handle: https://docs.flipper.net/development/cli#rnDLl
+fname = ARGV.shift # provide the path to your flipper zero
+raise "Please specify a device to open" if fname.nil?
+raise "Couldn't find #{fname}" unless File.exist?(fname)
+
+# open the flipper and specify the correct baud
+UART.open fname, 115200 do |flipper|
+    # read & print the Flipper Zero terminal art
+    puts flipper.read
+
+    # input command, or "help" if no command is supplied
+    message = ARGV.join(" ") || "help"
+    flipper.write "#{message}\r\n" # flipper cli uses \r\n to terminate lines.
+    # read & print message output
+    puts flipper.read
+end
+```
+
 ## REQUIREMENTS:
 
 * ruby-termios
@@ -92,7 +115,7 @@ end
 
 (The MIT License)
 
-Copyright (c) 2018 Aaron Patterson
+Copyright (c) Aaron Patterson
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
